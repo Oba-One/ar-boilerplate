@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* the props */
+@import "open-props/postcss/style";
+
+/* optional imports that use the props */
+@import "open-props/postcss/normalize";
+@import "open-props/postcss/buttons";
+
+/* individual imports */
+@import "open-props/postcss/indigo";
+@import "open-props/postcss/easings";
+@import "open-props/postcss/animations";
+@import "open-props/postcss/sizes";
+@import "open-props/postcss/gradients";
+/* see PropPacks for the full list */
+
+body {
+  font-family: sans-serif;
+  text-align: center;
+}
+
+/* Hide canvas by default, it is not needed outside immersive-ar */
+canvas {
+  width: 100%;
+  height: 100%;
+  display: none;
+}
+
+/* Override default AR button styles to make it look better on a white background */
+#ARButton {
+  border: 1px solid gray !important;
+  color: black !important;
+}
