@@ -6,6 +6,7 @@ const TerserPlugin = require("terser-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const WebpackPwaManifest = require("webpack-pwa-manifest");
 const WorkboxWebpackPlugin = require("workbox-webpack-plugin");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const CompressionPlugin = require("compression-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
@@ -13,17 +14,32 @@ const { WebpackManifestPlugin } = require("webpack-manifest-plugin");
 const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin");
 const InlineChunkHtmlPlugin = require("react-dev-utils/InlineChunkHtmlPlugin");
 
+process.env.BABEL_ENV = "production";
+process.env.NODE_ENV = "production";
+
 const paths = require("../paths");
 const config = require("./webpack.config.js");
 
-module.exports = merge(config, {
+/**
+ * @type import('webpack').Configuration
+ */
+const prodConfig = {
   mode: "production",
+  devtool: "source-map",
   output: {
     path: path.resolve(__dirname, "dist"),
   },
   bail: true,
   plugins: [
     new CleanWebpackPlugin(),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: ".assets/",
+          to: "",
+        },
+      ],
+    }),
     new CompressionPlugin(),
     new WebpackPwaManifest({
       name: "My Progressive Web App",
@@ -108,4 +124,6 @@ module.exports = merge(config, {
       new TerserPlugin(),
     ],
   },
-});
+};
+
+module.exports = merge(config, prodConfig);

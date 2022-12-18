@@ -10,18 +10,20 @@ const getClientEnvironment = require("../env");
 
 const ESLintPlugin = require("eslint-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const CopyWebpackPlugin = require("copy-webpack-plugin");
 const ModuleNotFoundPlugin = require("react-dev-utils/ModuleNotFoundPlugin");
 const InterpolateHtmlPlugin = require("react-dev-utils/InterpolateHtmlPlugin");
-
+const { WebpackManifestPlugin } = require("webpack-manifest-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const ModuleScopePlugin = require("react-dev-utils/ModuleScopePlugin");
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
-const createEnvironmentHash = require("./webpack/persistentCache/createEnvironmentHash");
+const createEnvironmentHash = require("../createEnvironmentHash");
 const ForkTsCheckerNotifierWebpackPlugin = require("fork-ts-checker-notifier-webpack-plugin");
 
 const isEnvDevelopment = process.env.NODE_ENV === "development";
 const isEnvProduction = process.env.NODE_ENV === "production";
+
+const OpenProps = require("open-props");
+const postcssJitProps = require("postcss-jit-props");
 
 const reactRefreshRuntimeEntry = require.resolve("react-refresh/runtime");
 const reactRefreshWebpackPluginRuntimeEntry = require.resolve(
@@ -85,17 +87,16 @@ const getStyleLoaders = (cssOptions) => {
           config: false,
           plugins: [
             "tailwindcss",
-            "autoprefixer",
-            // "postcss-flexbugs-fixes",
-            // [
-            //   "postcss-preset-env",
-            //   {
-            //     autoprefixer: {
-            //       flexbox: "no-2009",
-            //     },
-            //     stage: 3,
-            //   },
-            // ],
+            "postcss-flexbugs-fixes",
+            [
+              "postcss-preset-env",
+              {
+                autoprefixer: {
+                  flexbox: "no-2009",
+                },
+                stage: 3,
+              },
+            ],
           ],
         },
         sourceMap: true,
@@ -107,17 +108,16 @@ const getStyleLoaders = (cssOptions) => {
 
 const env = getClientEnvironment(paths.publicUrlOrPath.slice(0, -1));
 
+/**
+ * @type import('webpack').Configuration
+ */
 module.exports = {
   target: ["browserslist"],
   stats: "errors-warnings",
-  performance: false,
+  // performance: false,
   infrastructureLogging: {
     level: "none",
   },
-  devtool: isEnvProduction
-    ? "source-map"
-    : isEnvDevelopment && "cheap-module-source-map",
-  context: __dirname, // to automatically find tsconfig.json
   entry: paths.appIndexJs,
   output: {
     // The build folder.
@@ -155,9 +155,7 @@ module.exports = {
     buildDependencies: {
       defaultWebpack: ["webpack/lib/"],
       config: [__filename],
-      tsconfig: [paths.appTsConfig, paths.appJsConfig].filter((f) =>
-        fs.existsSync(f)
-      ),
+      tsconfig: [paths.appTsConfig].filter((f) => fs.existsSync(f)),
     },
   },
   resolve: {
@@ -285,10 +283,6 @@ module.exports = {
               cacheDirectory: true,
               // See #6846 for context on why cacheCompression is disabled
               cacheCompression: false,
-
-              // Babel sourcemaps are needed for debugging into node_modules
-              // code.  Without the options below, debuggers like VSCode
-              // show incorrect code and set breakpoints on the wrong lines.
               sourceMaps: true,
               inputSourceMap: true,
             },
@@ -320,23 +314,51 @@ module.exports = {
     ],
   },
   plugins: [
-    new InterpolateHtmlPlugin(HtmlWebpackPlugin, env.raw),
-    // This gives some necessary context to module not found errors, such as
-    // the requesting resource.
-    new ModuleNotFoundPlugin(paths.appPath),
-    // Makes some environment variables available to the JS code, for example:
-    // if (process.env.NODE_ENV === 'production') { ... }. See `./env.js`.
-    // It is absolutely essential that NODE_ENV is set to production
-    // during a production build.
-    // Otherwise React will be compiled in the very slow development mode.
-    new webpack.DefinePlugin(env.stringified),
-    new CopyWebpackPlugin({
-      patterns: [
+    new HtmlWebpackPlugin(
+      Object.assign(
+        {},
         {
-          from: ".assets/",
-          to: "",
+          inject: true,
+          template: paths.appHtml,
         },
-      ],
+        isEnvProduction
+          ? {
+              minify: {
+                removeComments: true,
+                collapseWhitespace: true,
+                removeRedundantAttributes: true,
+                useShortDoctype: true,
+                removeEmptyAttributes: true,
+                removeStyleLinkTypeAttributes: true,
+                keepClosingSlash: true,
+                minifyJS: true,
+                minifyCSS: true,
+                minifyURLs: true,
+              },
+            }
+          : undefined
+      )
+    ),
+    new InterpolateHtmlPlugin(HtmlWebpackPlugin, env.raw),
+    new ModuleNotFoundPlugin(paths.appPath),
+    new webpack.DefinePlugin(env.stringified),
+    new WebpackManifestPlugin({
+      fileName: "asset-manifest.json",
+      publicPath: paths.publicUrlOrPath,
+      generate: (seed, files, entrypoints) => {
+        const manifestFiles = files.reduce((manifest, file) => {
+          manifest[file.name] = file.path;
+          return manifest;
+        }, seed);
+        const entrypointFiles = entrypoints.main.filter(
+          (fileName) => !fileName.endsWith(".map")
+        );
+
+        return {
+          files: manifestFiles,
+          entrypoints: entrypointFiles,
+        };
+      },
     }),
     new ForkTsCheckerWebpackPlugin({
       async: isEnvDevelopment,
@@ -363,10 +385,6 @@ module.exports = {
         // profile: true,
       },
       issue: {
-        // This one is specifically to match during CI tests,
-        // as micromatch doesn't match
-        // '../cra-template-typescript/template/src/App.tsx'
-        // otherwise.
         include: [
           { file: "../**/app/**/*.{ts,tsx}" },
           { file: "**/app/**/*.{ts,tsx}" },
@@ -378,39 +396,14 @@ module.exports = {
           { file: "**/app/setupTests.*" },
         ],
       },
-      logger: {
-        infrastructure: "silent",
-      },
+      // logger: {
+      //   infrastructure: "silent",
+      // },
     }),
     new ForkTsCheckerNotifierWebpackPlugin({
       title: "TypeScript",
       excludeWarnings: false,
     }),
-    new HtmlWebpackPlugin(
-      Object.assign(
-        {},
-        {
-          inject: true,
-          template: paths.appHtml,
-        },
-        isEnvProduction
-          ? {
-              minify: {
-                removeComments: true,
-                collapseWhitespace: true,
-                removeRedundantAttributes: true,
-                useShortDoctype: true,
-                removeEmptyAttributes: true,
-                removeStyleLinkTypeAttributes: true,
-                keepClosingSlash: true,
-                minifyJS: true,
-                minifyCSS: true,
-                minifyURLs: true,
-              },
-            }
-          : undefined
-      )
-    ),
     new ESLintPlugin({
       // Plugin options
       extensions: ["js", "mjs", "jsx", "ts", "tsx"],
