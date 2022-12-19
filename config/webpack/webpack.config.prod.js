@@ -26,9 +26,6 @@ const config = require("./webpack.config.js");
 const prodConfig = {
   mode: "production",
   devtool: "source-map",
-  output: {
-    path: path.resolve(__dirname, "dist"),
-  },
   bail: true,
   plugins: [
     new CleanWebpackPlugin(),

@@ -22,13 +22,12 @@ const ForkTsCheckerNotifierWebpackPlugin = require("fork-ts-checker-notifier-web
 const isEnvDevelopment = process.env.NODE_ENV === "development";
 const isEnvProduction = process.env.NODE_ENV === "production";
 
-const OpenProps = require("open-props");
-const postcssJitProps = require("postcss-jit-props");
-
 const reactRefreshRuntimeEntry = require.resolve("react-refresh/runtime");
 const reactRefreshWebpackPluginRuntimeEntry = require.resolve(
   "@pmmmwh/react-refresh-webpack-plugin"
 );
+
+console.log("The Way", reactRefreshWebpackPluginRuntimeEntry);
 const babelRuntimeEntry = require.resolve("babel-preset-react-app");
 const babelRuntimeEntryHelpers = require.resolve(
   "@babel/runtime/helpers/esm/assertThisInitialized",
@@ -162,22 +161,27 @@ module.exports = {
     modules: ["node_modules", paths.appNodeModules].concat(
       modules.additionalModulePaths || []
     ),
-    extensions: paths.moduleFileExtensions.map((ext) => `.${ext}`),
-    plugins: [
-      // Prevents users from importing files from outside of src/ (or node_modules/).
-      // This often causes confusion because we only process files within src/ with babel.
-      // To fix this, we prevent you from importing files out of src/ -- if you'd like to,
-      // please link the files into your node_modules/ and let module-resolution kick in.
-      // Make sure your source files are compiled, as they will not be processed in any way.
-      new ModuleScopePlugin(paths.appSrc, [
-        paths.appPackageJson,
-        reactRefreshRuntimeEntry,
-        reactRefreshWebpackPluginRuntimeEntry,
-        babelRuntimeEntry,
-        babelRuntimeEntryHelpers,
-        babelRuntimeRegenerator,
-      ]),
-    ],
+    extensions: paths.moduleFileExtensions
+      .map((ext) => `.${ext}`)
+      .filter((ext) => true || !ext.includes("ts")),
+    alias: {
+      ...(modules.webpackAliases || {}),
+    },
+    // plugins: [
+    //   // Prevents users from importing files from outside of src/ (or node_modules/).
+    //   // This often causes confusion because we only process files within src/ with babel.
+    //   // To fix this, we prevent you from importing files out of src/ -- if you'd like to,
+    //   // please link the files into your node_modules/ and let module-resolution kick in.
+    //   // Make sure your source files are compiled, as they will not be processed in any way.
+    //   new ModuleScopePlugin(paths.appSrc, [
+    //     paths.appPackageJson,
+    //     reactRefreshRuntimeEntry,
+    //     reactRefreshWebpackPluginRuntimeEntry,
+    //     babelRuntimeEntry,
+    //     babelRuntimeEntryHelpers,
+    //     babelRuntimeRegenerator,
+    //   ]),
+    // ],
   },
   module: {
     strictExportPresence: true,
