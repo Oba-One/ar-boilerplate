@@ -1,36 +1,45 @@
-import React, { useEffect, useRef } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { XR, useXR } from "@react-three/xr";
+import React, { useEffect, useState, useRef } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { useSpring, a } from "@react-spring/three";
 
-const ARCanvas: React.FC = () => {
-  const { gl, scene, camera, size } = useThree();
+import 'styles.module.css'
+
+const Cube: React.FC<{ position: any }> = (props) => {
+  const mesh = useRef();
+  useFrame(() => {
+    if (mesh.current) {
+      //@ts-ignore
+      mesh.current.rotation.y += 0.01;
+    }
+  });
+  const [hovered, setHover] = useState(false);
+  const [active, setActive] = useState(false);
+  const { scale } = useSpring({ scale: active ? 1.5 : 1 });
+
+  return (
+    //@ts-ignore
+    <a.mesh
+      ref={mesh}
+      onPointerOver={() => setHover(true)}
+      onPointerOut={() => setHover(false)}
+      onClick={() => setActive(!active)}
+      scale={scale}
+      {...props}
+    >
+      <boxGeometry args={[2, 2, 2]} />
+      <meshStandardMaterial color={hovered ? "hotpink" : "orange"} />
+    </a.mesh>
+  );
+};
+
+const Lens: React.FC = () => {
   const redBallRef = useRef<any>();
 
   useEffect(() => {
-    new GLTFLoader().load("./model.gltf", (gltf) => {
-      scene.add(gltf.scene);
-    });
-  }, [scene]);
-
-  // useXR((inputs: any[]) => {
-  //   inputs.forEach(
-  //     (input: {
-  //       addEventListener: (
-  //         arg0: string,
-  //         arg1: { (event: any): void; (event: any): void }
-  //       ) => void;
-  //     }) => {
-  //       input.addEventListener("selectstart", (event: any) => {
-  //         console.log("Select start event:", event);
-  //       });
-  //       input.addEventListener("selectend", (event: any) => {
-  //         console.log("Select end event:", event);
-  //       });
-  //     }
-  //   );
-  // });
-
+    // new GLTFLoader().load("./model.gltf", (gltf) => {
+    //   scene.add(gltf.scene);
+    // });
+  }, []);
 
   useFrame(() => {
     if (redBallRef.current) {
@@ -39,18 +48,13 @@ const ARCanvas: React.FC = () => {
   });
 
   return (
-    <Canvas
-      gl={gl}
-      camera={camera}
-      onCreated={() => {
-        // gl.setClearColor(new Color("lightgrey"));
-      }}
-    >
-      {/* <XR /> */}
-      <ambientLight intensity={0.5} />
-      <pointLight intensity={1} position={[10, 10, 10]} />
+    <Canvas>
+      <ambientLight />
+      <pointLight position={[10, 10, 10]} />
+      <Cube position={[-2.2, 0, 0]} />
+      <Cube position={[2.2, 0, 0]} />
     </Canvas>
   );
 };
 
-export default ARCanvas;
+export default Lens;
