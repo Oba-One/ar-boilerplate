@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": ["dom", "dom.iterable", "esnext", "WebWorker"],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -14,7 +14,15 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "baseUrl": "app",
+    "paths": {
+      "@assets/*": ["./assets/*"],
+      "@modules/*": ["./modules/*"],
+      "@components/*": ["./components/*"],
+      "@views/*": ["./views/*"],
+      "@utils/*": ["./utils/*"]
+    }
   },
-  "include": ["app"]
+  "include": ["app",]
 }
