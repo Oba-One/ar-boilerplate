@@ -1,10 +1,10 @@
 {
-  "intro": "intro.mp3",
-  "menu": "menu.mp3",
-  "uiNav": "uiNav.mp3",
-  "select": "select.mp3",
-  "error": "error.mp3",
-  "reward": "reward.mp3",
-  "powerup": "powerup.mp3",
-  "victory": "victory.mp3"
+  "intro": { "file": "intro.mp3", "context": "affect" },
+  "reward": { "file": "reward.mp3", "context": "effect" },
+  "powerup": { "file": "powerup.mp3", "context": "effect" },
+  "victory": { "file": "victory.mp3", "context": "effect" },
+  "nav": { "file": "nav.mp3", "context": "interface" },
+  "menu": { "file": "menu.mp3", "context": "interface" },
+  "error": { "file": "error.mp3", "context": "interface" },
+  "select": { "file": "select.mp3", "context": "interface" }
 }

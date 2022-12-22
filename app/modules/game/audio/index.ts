@@ -1,9 +1,8 @@
+const worker = new Worker(new URL('./modules/game/audio/worker.ts', import.meta.url));
+
 export class GameAudioPlayer {
   private audioContexts: { [key: string]: AudioContext } = {};
-  private soundGroups: { [key: string]: string[] } = {};
   private sounds: { [key: string]: AudioBuffer } = {};
-  // private filters: { [key: string]: BiquadFilterNode } = {};
-  private volumes: { [key: string]: number } = {};
 
   public createAudioContext(name: string): void {
     this.audioContexts[name] = new AudioContext();
@@ -15,26 +14,6 @@ export class GameAudioPlayer {
 
   public resumeContext(context = "default"): void {
     this.audioContexts[context].resume();
-  }
-
-  public setVolume(name: string, volume: number): void {
-    this.volumes[name] = volume;
-  }
-
-  public setGroupVolume(group: string, volume: number): void {
-    const soundNames = this.soundGroups[group];
-    if (!soundNames) {
-      console.warn(`Sound group not found: ${group}`);
-      return;
-    }
-    for (const name of soundNames) {
-      this.setVolume(name, volume);
-    }
-  }
-
-  public setContextVolume(volume: number, context = "default"): void {
-    this.volumes[context] = volume;
-    // this.audioContexts[context].destination.gain.value = volume;
   }
 
   public async loadSound(
