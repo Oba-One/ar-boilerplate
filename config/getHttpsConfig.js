@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
+// eslint-disable-next-line strict
 'use strict';
 
 const fs = require('fs');

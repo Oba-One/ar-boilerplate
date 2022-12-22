@@ -1,4 +1,5 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
+'use strict';
+
 const path = require('path');
 const camelcase = require('camelcase');
 

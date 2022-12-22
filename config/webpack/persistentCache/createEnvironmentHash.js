@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 'use strict';
 const { createHash } = require('crypto');
 
