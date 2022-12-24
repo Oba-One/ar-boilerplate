@@ -1,58 +1,52 @@
-import React, { useEffect, useState, useRef } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { useSpring, a } from "@react-spring/three";
+import React, { useRef } from "react";
+import { Canvas, useFrame, useThree, extend } from "@react-three/fiber";
+import { Mesh } from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
-// import './styles.module.css'
+import "./styles.module.css";
+import CustomObject from "./CustomObject";
 
-const Cube: React.FC<{ position: any }> = (props) => {
-  const mesh = useRef();
-  useFrame(() => {
-    if (mesh.current) {
-      //@ts-ignore
-      mesh.current.rotation.y += 0.01;
+extend({
+  OrbitControls,
+});
+
+const Experience: React.FC = () => {
+  const { camera, gl } = useThree();
+  const ref = useRef<Mesh>(null!);
+
+  useFrame((_, delta) => {
+    if (ref.current?.rotation) {
+      ref.current.rotation.y += delta;
     }
   });
-  const [hovered, setHover] = useState(false);
-  const [active, setActive] = useState(false);
-  const { scale } = useSpring({ scale: active ? 1.5 : 1 });
 
   return (
-    //@ts-ignore
-    <a.mesh
-      ref={mesh}
-      onPointerOver={() => setHover(true)}
-      onPointerOut={() => setHover(false)}
-      onClick={() => setActive(!active)}
-      scale={scale}
-      {...props}
-    >
-      <boxGeometry args={[2, 2, 2]} />
-      <meshStandardMaterial color={hovered ? "hotpink" : "orange"} />
-    </a.mesh>
+    <>
+      {/* <orbitControls args={[camera, gl.domElement]} /> */}
+
+      <group>
+        <mesh position-x={-2}>
+          <sphereGeometry />
+          <meshBasicMaterial color="orange" />
+        </mesh>
+        <mesh ref={ref} position-x={2} rotation-y={Math.PI * 0.25} scale={1.5}>
+          <boxGeometry />
+          <meshBasicMaterial color="mediumpurple" />
+        </mesh>
+      </group>
+      <mesh position-y={-1} rotation-x={-Math.PI * 0.5} scale={10}>
+        <planeGeometry />
+        <meshBasicMaterial color="greenyellow" />
+      </mesh>
+      <CustomObject />
+    </>
   );
 };
 
 const Lens: React.FC = () => {
-  const redBallRef = useRef<any>();
-
-  useEffect(() => {
-    // new GLTFLoader().load("./model.gltf", (gltf) => {
-    //   scene.add(gltf.scene);
-    // });
-  }, []);
-
-  useFrame(() => {
-    if (redBallRef.current) {
-      redBallRef.current.rotation.y += 0.01;
-    }
-  });
-
   return (
     <Canvas>
-      <ambientLight />
-      <pointLight position={[10, 10, 10]} />
-      <Cube position={[-2.2, 0, 0]} />
-      <Cube position={[2.2, 0, 0]} />
+      <Experience />
     </Canvas>
   );
 };
