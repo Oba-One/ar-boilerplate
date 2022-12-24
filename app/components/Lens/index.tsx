@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useSpring, a } from "@react-spring/three";
 
-import 'styles.module.css'
+// import './styles.module.css'
 
 const Cube: React.FC<{ position: any }> = (props) => {
   const mesh = useRef();
