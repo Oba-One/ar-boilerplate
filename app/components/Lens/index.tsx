@@ -22,7 +22,7 @@ const Experience: React.FC = () => {
 
   return (
     <>
-      {/* <orbitControls args={[camera, gl.domElement]} /> */}
+      <orbitControls args={[camera, gl.domElement]} />
 
       <group>
         <mesh position-x={-2}>
