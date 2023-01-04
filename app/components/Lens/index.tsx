@@ -1,44 +1,49 @@
 import React, { useRef } from "react";
-import { Canvas, useFrame, useThree, extend } from "@react-three/fiber";
-import { Mesh } from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { Canvas } from "@react-three/fiber";
+import {
+  Html,
+  OrbitControls,
+  PivotControls,
+  TransformControls,
+} from "@react-three/drei";
+// import { Mesh } from "three";
 
 import "./styles.module.css";
-import CustomObject from "./CustomObject";
-
-extend({
-  OrbitControls,
-});
-
+// import CustomObject from "./CustomObject";
 const Experience: React.FC = () => {
-  const { camera, gl } = useThree();
-  const ref = useRef<Mesh>(null!);
-
-  useFrame((_, delta) => {
-    if (ref.current?.rotation) {
-      ref.current.rotation.y += delta;
-    }
-  });
+  const cube = useRef(null!);
+  const sphere = useRef(null!);
 
   return (
     <>
-      <orbitControls args={[camera, gl.domElement]} />
-
-      <group>
-        <mesh position-x={-2}>
+      <OrbitControls makeDefault />
+      <directionalLight position={[1, 2, 3]} intensity={1.5} />
+      <ambientLight intensity={0.5} />
+      <PivotControls anchor={[0, 0, 0]} depthTest={false}>
+        <mesh position-x={-2} ref={sphere}>
           <sphereGeometry />
-          <meshBasicMaterial color="orange" />
+          <meshStandardMaterial color="orange" />
+          <Html
+            position={[1, 1, 0]}
+            wrapperClass="label"
+            center
+            distanceFactor={7}
+            occlude={[sphere, cube]}
+          >
+            That's a sphere!
+          </Html>
         </mesh>
-        <mesh ref={ref} position-x={2} rotation-y={Math.PI * 0.25} scale={1.5}>
-          <boxGeometry />
-          <meshBasicMaterial color="mediumpurple" />
-        </mesh>
-      </group>
+      </PivotControls>
+      <mesh ref={cube} position-x={2} rotation-y={Math.PI * 0.25} scale={1.5}>
+        <boxGeometry />
+        <meshStandardMaterial color="mediumpurple" />
+      </mesh>
+      <TransformControls object={cube} />\{" "}
       <mesh position-y={-1} rotation-x={-Math.PI * 0.5} scale={10}>
         <planeGeometry />
-        <meshBasicMaterial color="greenyellow" />
+        <meshStandardMaterial color="greenyellow" />
       </mesh>
-      <CustomObject />
+      {/* <CustomObject /> */}
     </>
   );
 };
